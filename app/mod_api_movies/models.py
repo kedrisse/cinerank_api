@@ -1,6 +1,7 @@
 # Import the database object (db) from the main application module
 # We will define this inside /app/__init__.py in the next sections.
 from app import db
+from app.services.gaumont.cinema import Cinema
 from app.services.rates.allocine_rate import AllocineRate
 from app.services.rates.imdb_rate import ImdbRate
 from app.services.tmdb.tmdb_movie import TmdbMovie
@@ -67,16 +68,82 @@ class Movie(Base):
     def set_tmdb_movie(self, tmdb_movie):
         self.tmdb_movie = tmdb_movie
 
-    def score(self, k=0.5):
+    def score(self):
         if self.imdb_rate is None or self.allocine_rate is None:
             return 0.
 
-        score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, 5000) + \
-                self.local_score(self.allocine_rate, 5, self.allocine_number_rate, 500)
+        score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, 0) + \
+                self.local_score(self.allocine_rate, 5, self.allocine_number_rate, 0)
         return round(score, 1)
 
     def local_score(self, rate, max_rate, number_rate, constante=0.5):
         return (((number_rate * rate / max_rate) + (0.5 * constante)) / (number_rate + constante)) * max_rate
+
+    @staticmethod
+    def get_gaumont_movies(cine_id):
+        cine = Cinema.get_cinema(cine_id)
+
+        gaumont_movies = []
+
+        for f in cine.get_films():
+            # si on a déjà l'id tmdb dans la DB
+            if Movie.query.filter_by(gaumont_id=f.id).count() > 0:
+                movie = Movie.query.filter_by(gaumont_id=f.id).first()
+                tmdb_movie = TmdbMovie.get_film(movie.tmdb_id)
+                movie.set_tmdb_movie(tmdb_movie)
+            else:
+                tmdb_movie = TmdbMovie.search_film(f.name)
+                if tmdb_movie is None:
+                    continue
+
+                allocine = {}
+                imdb = {}
+
+                allocine['id'], allocine['rate'], allocine['count'] = AllocineRate.call(tmdb_movie.original_title,
+                                                                                        tmdb_movie.title)
+
+                imdb_id = tmdb_movie.get_external_ids()['imdb_id']
+                if imdb_id is None:
+                    imdb['id'], imdb['rate'], imdb['count'] = None, None, None
+                else:
+                    imdb['id'], imdb['rate'], imdb['count'] = ImdbRate.call(imdb_id[2:])
+
+                movie = Movie(gaumont_id=f.id, tmdb_id=tmdb_movie.id, imdb_id=imdb['id'],
+                              imdb_rate=imdb['rate'], imdb_number_rate=imdb['count'],
+                              allocine_id=allocine['id'], allocine_rate=allocine['rate'],
+                              allocine_number_rate=allocine['count'])
+                movie.set_tmdb_movie(tmdb_movie)
+
+                db.session.add(movie)
+                db.session.commit()
+
+            gaumont_movies.append(movie)
+
+        return gaumont_movies
+
+    @staticmethod
+    def get_today_movies(cine_id):
+        today_movies = []
+        gaumont_movies = Movie.get_gaumont_movies(cine_id)
+
+        return gaumont_movies
+
+        # for m in gaumont_movies:
+        #    upcoming_seances = m.gaumont_movie.get_today_upcoming_seances(cine_id)
+        #    if len(upcoming_seances) > 0:
+        #        today_movies.append(m)
+
+        # return today_movies
+
+    @staticmethod
+    def get_today_movies_order_by_score(cine_id, format=None):
+        gaumont_movies = Movie.get_today_movies(cine_id)
+        gaumont_movies = sorted(gaumont_movies, key=lambda x: x.score(), reverse=True)
+
+        if format == 'api_json':
+            return build_api_index_response(gaumont_movies)
+
+        return gaumont_movies
 
     @staticmethod
     def get_tmdb_now_playing_movies(format=None, order=None):
@@ -85,8 +152,6 @@ class Movie(Base):
 
         for tmdb_movie in thmdb_now_playing_movies:
             if Movie.query.filter_by(tmdb_id=tmdb_movie.id).count() > 0:
-                print(tmdb_movie.title, 'exists')
-
                 movie = Movie.query.filter_by(tmdb_id=tmdb_movie.id).first()
                 movie.set_tmdb_movie(tmdb_movie)
 
@@ -107,8 +172,6 @@ class Movie(Base):
 
                 db.session.add(movie)
                 db.session.commit()
-
-                print(tmdb_movie.title, 'ajouté')
 
                 now_playing_movies.append(movie)
 

@@ -3,7 +3,7 @@ import urllib.request
 import urllib.parse
 import ssl
 
-from app.services.tmdb import api_key
+from app.services.tmdb import api_key, language
 
 
 class TmdbMovie:
@@ -41,7 +41,7 @@ class TmdbMovie:
     @staticmethod
     def search_film(movie_name):
         content_url = 'https://api.themoviedb.org/3/search/multi?query=' + urllib.parse.quote_plus(movie_name) + \
-                      '&api_key=' + api_key + '&include_adult=false&language=fr-FR'
+                      '&api_key=' + api_key + '&include_adult=false&language='+language
 
         ssl._create_default_https_context = ssl._create_unverified_context
         with urllib.request.urlopen(content_url) as url:
@@ -59,7 +59,7 @@ class TmdbMovie:
     @staticmethod
     def get_film(movie_id):
         content_url = 'https://api.themoviedb.org/3/movie/' + str(movie_id) + \
-                      '?api_key=' + api_key + '&language=fr-FR'
+                      '?api_key=' + api_key + '&language='+language
 
         ssl._create_default_https_context = ssl._create_unverified_context
         with urllib.request.urlopen(content_url) as url:
@@ -75,7 +75,7 @@ class TmdbMovie:
     def get_now_playing():
         now_playing_movies = []
         content_url = 'https://api.themoviedb.org/3/movie/now_playing?api_key=' + api_key + \
-                      '&language=fr-FR&page=1&region=FR'
+                      '&language='+language+'&page=1&region=FR'
 
         ssl._create_default_https_context = ssl._create_unverified_context
         with urllib.request.urlopen(content_url) as url:

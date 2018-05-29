@@ -9,10 +9,14 @@ from app import db
 from app.mod_api_movies.models import Movie
 
 # Define the blueprint: 'auth', set its url prefix: app.url/auth
+from app.services.gaumont.cinema import Cinema
+from app.services.gaumont.film_gaumont import FilmGaumont
+
 mod_api_movies = Blueprint('movies', __name__)
 
 
 # Set the route and accepted methods
-@mod_api_movies.route('/movies/', methods=['GET', 'POST'])
-def get_movies():
-    return jsonify(Movie.get_tmdb_now_playing_movies(format='api_json', order='score'))
+@mod_api_movies.route('/movies/<int:cinema_id>/', methods=['GET', 'POST'])
+def get_movies(cinema_id):
+
+    return jsonify(Movie.get_today_movies_order_by_score(cinema_id, format='api_json'))
