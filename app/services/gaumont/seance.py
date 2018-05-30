@@ -17,7 +17,8 @@ class Seance:
         self.specificites = specificites
 
     def local_timezone(self):
-        return self.timestamp.astimezone(get_localzone())
+        tz = pytz.timezone('Europe/Paris')
+        return self.timestamp.astimezone(tz)
 
     def __str__(self):
         return str(self.timestamp)+'\t'+str(self.film_id)
