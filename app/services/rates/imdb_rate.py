@@ -20,6 +20,10 @@ class ImdbRate:
 
     @staticmethod
     def get_rate(imdb_id):
+
+        if imdb_id is None:
+            return None, None, None
+
         try:
             imdb_link = "https://www.imdb.com/title/tt" + str(imdb_id)
             imdb_page = BeautifulSoup(open_link(imdb_link), "html.parser")

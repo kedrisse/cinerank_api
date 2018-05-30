@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<!--<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>-->
+		<link href="https://fonts.googleapis.com/css?family=Roboto+Slab:300,400,700" rel="stylesheet">
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	</head>
+	<body>
+		<div id="app">
+      {% for movie in movies %}
+        <div class="movie-container" style="background-image: url('{{ movie.tmdb_movie.get_backdrop_path() }}')">
+          <div class="blur"></div>
+          <div class="movie-content">
+            <h2 class="movie-title">{{ movie.tmdb_movie.title }}</h2>
+
+            <div class="movie-main-container">
+              <img src="{{ movie.tmdb_movie.get_poster_path() }}" class="movie-poster">
+
+              <div class="movie-main-content">
+                <div class="col">
+                  <div class="global-score">{{ movie.score() }}</div>
+                  <table class="movies-rates">
+                    {% for site in movie.get_rates() %}
+                      <tr class="movie-rate">
+                        <td class="rate-website">
+                          <a href="{{ movie.get_external_ids()[site] }}" target="_blank">{{ site }}</a>
+                        </td>
+                        <td class="rate-rate">{{ movie.get_rates()[site]['rate'] }}</td>
+                        <td class="rate-count">{{ movie.get_rates()[site]['rates_count'] }}&nbsp;&nbsp;notes</td>
+                      </tr>
+                    {% endfor %}
+                  </table>
+                </div>
+                <div class="col">
+                  <p class="overview">{{ movie.tmdb_movie.overview }}</p>
+
+                  <div class="prochaine_seance">
+                    Prochaine séance : {{ movie.upcoming_seances[0].local_timezone().strftime('%H:%M') }}
+                    <span class="prochaine_seance_specs">{{ ', '.join(movie.upcoming_seances[0].get_specificites()) }}</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+		</div>
+		<!--<script type="text/javascript">
+			var app = new Vue({
+				el: '#app',
+				data () {
+					return {
+						movies: null
+					}
+				},
+				filters: {
+
+				},
+				mounted () {
+					axios
+						.get('http://127.0.0.1:5000/movies/32')
+						.then(response => (this.movies = response.data.movies))
+						.catch(error => console.log(error))
+				}
+			})
+		</script>-->
+	</body>
+</html>

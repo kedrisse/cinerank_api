@@ -33,3 +33,10 @@ class Seance:
                     spec.append(j['n'])
 
         return spec
+
+    def json_format(self):
+        return {
+            'id': self.id,
+            'timestamps': self.timestamp,
+            'specificites': self.specificites
+        }

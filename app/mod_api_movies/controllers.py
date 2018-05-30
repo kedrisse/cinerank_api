@@ -16,7 +16,15 @@ mod_api_movies = Blueprint('movies', __name__)
 
 
 # Set the route and accepted methods
-@mod_api_movies.route('/movies/<int:cinema_id>/', methods=['GET', 'POST'])
+@mod_api_movies.route('/movies/<int:cinema_id>/', methods=['GET'])
 def get_movies(cinema_id):
 
-    return jsonify(Movie.get_today_movies_order_by_score(cinema_id, format='api_json'))
+    return render_template('movies/index.html', movies=Movie.get_today_movies_order_by_score(cinema_id))
+    #return jsonify(Movie.get_today_movies_order_by_score(cinema_id, format='api_json'))
+
+
+@mod_api_movies.route('/movies/refresh_rates/', methods=['GET'])
+def refresh_rates():
+    Movie.update_rates()
+
+    return ''

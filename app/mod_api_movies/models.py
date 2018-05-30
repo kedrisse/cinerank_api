@@ -31,7 +31,8 @@ def build_api_index_response(movies):
             'external_ids': {
                 'imdb': ("https://www.imdb.com/title/tt" + str(movie.imdb_id)) if movie.imdb_id is not None else None,
                 'allocine': ('http://www.allocine.fr/film/fichefilm_gen_cfilm=' + str(movie.allocine_id) + '.html') if movie.allocine_id is not None else None
-            }
+            },
+            'upcoming_seances': movie.get_upcoming_seances_json()
         }
         json['movies'].append(m)
 
@@ -64,9 +65,39 @@ class Movie(Base):
     allocine_number_rate = db.Column(db.Integer, nullable=True)
 
     tmdb_movie = None
+    upcoming_seances = None
 
     def set_tmdb_movie(self, tmdb_movie):
         self.tmdb_movie = tmdb_movie
+
+    def set_upcoming_seances(self, upcoming_seances):
+        self.upcoming_seances = upcoming_seances
+
+    def get_upcoming_seances_json(self):
+        upcoming_seances = []
+
+        for s in self.upcoming_seances:
+            upcoming_seances.append(s.json_format())
+
+        return upcoming_seances
+
+    def get_rates(self):
+        return {
+            'imdb': {
+                'rate': self.imdb_rate,
+                'rates_count': self.imdb_number_rate
+            },
+            'allocine': {
+                'rate': self.allocine_rate,
+                'rates_count': self.allocine_number_rate
+            },
+        }
+
+    def get_external_ids(self):
+        return {
+                'imdb': ("https://www.imdb.com/title/tt" + str(self.imdb_id)) if self.imdb_id is not None else None,
+                'allocine': ('http://www.allocine.fr/film/fichefilm_gen_cfilm=' + str(self.allocine_id) + '.html') if self.allocine_id is not None else None
+            }
 
     def score(self):
         if self.imdb_rate is None or self.allocine_rate is None:
@@ -86,38 +117,45 @@ class Movie(Base):
         gaumont_movies = []
 
         for f in cine.get_films():
-            # si on a déjà l'id tmdb dans la DB
-            if Movie.query.filter_by(gaumont_id=f.id).count() > 0:
-                movie = Movie.query.filter_by(gaumont_id=f.id).first()
-                tmdb_movie = TmdbMovie.get_film(movie.tmdb_id)
-                movie.set_tmdb_movie(tmdb_movie)
-            else:
-                tmdb_movie = TmdbMovie.search_film(f.name)
-                if tmdb_movie is None:
-                    continue
 
-                allocine = {}
-                imdb = {}
+            upcoming_seances = f.get_today_upcoming_seances(cine_id)
+            if len(upcoming_seances) > 0:
 
-                allocine['id'], allocine['rate'], allocine['count'] = AllocineRate.call(tmdb_movie.original_title,
-                                                                                        tmdb_movie.title)
-
-                imdb_id = tmdb_movie.get_external_ids()['imdb_id']
-                if imdb_id is None:
-                    imdb['id'], imdb['rate'], imdb['count'] = None, None, None
+                # si on a déjà l'id tmdb dans la DB
+                if Movie.query.filter_by(gaumont_id=f.id).count() > 0:
+                    movie = Movie.query.filter_by(gaumont_id=f.id).first()
+                    tmdb_movie = TmdbMovie.search_in_now_playing(movie.tmdb_id, nb_pages=5)
+                    if tmdb_movie is None:
+                        tmdb_movie = TmdbMovie.get_film(movie.tmdb_id)
                 else:
-                    imdb['id'], imdb['rate'], imdb['count'] = ImdbRate.call(imdb_id[2:])
+                    tmdb_movie = TmdbMovie.search_film(f.name)
+                    if tmdb_movie is None:
+                        continue
 
-                movie = Movie(gaumont_id=f.id, tmdb_id=tmdb_movie.id, imdb_id=imdb['id'],
-                              imdb_rate=imdb['rate'], imdb_number_rate=imdb['count'],
-                              allocine_id=allocine['id'], allocine_rate=allocine['rate'],
-                              allocine_number_rate=allocine['count'])
+                    allocine = {}
+                    imdb = {}
+
+                    allocine['id'], allocine['rate'], allocine['count'] = AllocineRate.call(tmdb_movie.original_title,
+                                                                                            tmdb_movie.title)
+
+                    imdb_id = tmdb_movie.get_external_ids()['imdb_id']
+                    if imdb_id is None:
+                        imdb['id'], imdb['rate'], imdb['count'] = None, None, None
+                    else:
+                        imdb['id'], imdb['rate'], imdb['count'] = ImdbRate.call(imdb_id[2:])
+
+                    movie = Movie(gaumont_id=f.id, tmdb_id=tmdb_movie.id, imdb_id=imdb['id'],
+                                  imdb_rate=imdb['rate'], imdb_number_rate=imdb['count'],
+                                  allocine_id=allocine['id'], allocine_rate=allocine['rate'],
+                                  allocine_number_rate=allocine['count'])
+
+                    db.session.add(movie)
+                    db.session.commit()
+
                 movie.set_tmdb_movie(tmdb_movie)
+                movie.set_upcoming_seances(upcoming_seances)
 
-                db.session.add(movie)
-                db.session.commit()
-
-            gaumont_movies.append(movie)
+                gaumont_movies.append(movie)
 
         return gaumont_movies
 
@@ -182,3 +220,15 @@ class Movie(Base):
             return build_api_index_response(now_playing_movies)
 
         return now_playing_movies
+
+
+    @staticmethod
+    def update_rates():
+        for movie in Movie.query.all():
+            allocine = {}
+            imdb = {}
+
+            allocine['id'], movie.allocine_rate, movie.allocine_number_rate = AllocineRate.get_rate(movie.allocine_id)
+            imdb['id'], movie.imdb_rate, movie.imdb_number_rate = ImdbRate.get_rate(movie.imdb_id)
+            db.session.commit()
+            print(movie.id, 'mis à jour')

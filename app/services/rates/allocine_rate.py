@@ -51,6 +51,10 @@ class AllocineRate:
 
     @staticmethod
     def get_rate(allocine_id):
+
+        if allocine_id is None:
+            return None, None, None
+
         movie_link = 'http://www.allocine.fr/film/fichefilm_gen_cfilm=' + str(allocine_id) + '.html'
         page = BeautifulSoup(open_link(movie_link), "html.parser")
         aggregate_rating = page.select('div[itemprop="aggregateRating"]')
