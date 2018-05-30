@@ -5,6 +5,7 @@ from app.services.gaumont.cinema import Cinema
 from app.services.rates.allocine_rate import AllocineRate
 from app.services.rates.imdb_rate import ImdbRate
 from app.services.tmdb.tmdb_movie import TmdbMovie
+from sqlalchemy.sql import func
 
 
 def build_api_index_response(movies):
@@ -66,6 +67,9 @@ class Movie(Base):
 
     tmdb_movie = None
     upcoming_seances = None
+    allocine_rate_count_svg = None
+    imdb_rate_count_svg = None
+
 
     def set_tmdb_movie(self, tmdb_movie):
         self.tmdb_movie = tmdb_movie
@@ -103,8 +107,14 @@ class Movie(Base):
         if self.imdb_rate is None or self.allocine_rate is None:
             return 0.
 
-        score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, 0) + \
-                self.local_score(self.allocine_rate, 5, self.allocine_number_rate, 0)
+        if Movie.allocine_rate_count_svg is None:
+            Movie.allocine_rate_count_svg = Movie.query.with_entities(func.avg(Movie.allocine_number_rate).label('average'))[0][0]
+
+        if Movie.imdb_rate_count_svg is None:
+            Movie.imdb_rate_count_svg = Movie.query.with_entities(func.avg(Movie.imdb_number_rate).label('average'))[0][0]
+
+        score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, Movie.imdb_rate_count_svg/100) + \
+                self.local_score(self.allocine_rate, 5, self.allocine_number_rate, Movie.allocine_rate_count_svg/100)
         score = score*2/3
         return round(score, 1)
 
