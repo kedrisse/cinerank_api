@@ -105,6 +105,7 @@ class Movie(Base):
 
         score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, 0) + \
                 self.local_score(self.allocine_rate, 5, self.allocine_number_rate, 0)
+        score = score*2/3
         return round(score, 1)
 
     def local_score(self, rate, max_rate, number_rate, constante=0.5):
