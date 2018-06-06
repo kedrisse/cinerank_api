@@ -1,6 +1,7 @@
 # Import flask and template operators
 from flask import Flask, render_template
 from flask_cors import CORS
+from flask_scss import Scss
 
 # Import SQLAlchemy
 from flask_sqlalchemy import SQLAlchemy
@@ -8,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 # Define the WSGI application object
 app = Flask(__name__)
 CORS(app)
+Scss(app)
 
 # Configurations
 app.config.from_object('config')

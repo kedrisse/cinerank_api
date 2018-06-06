@@ -1,138 +1,50 @@
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed, 
-figure, figcaption, footer, header, hgroup, 
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	font-size: 100%;
-	font: inherit;
-	vertical-align: baseline;
-}
-/* HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure, 
-footer, header, hgroup, menu, nav, section {
-	display: block;
-}
-body {
-	line-height: 1;
-	font-family: 'Roboto Slab', serif;
-}
-ol, ul {
-	list-style: none;
-}
-blockquote, q {
-	quotes: none;
-}
-blockquote:before, blockquote:after,
-q:before, q:after {
-	content: '';
-	content: none;
-}
-table {
-	border-collapse: collapse;
-	border-spacing: 0;
-}
-
-
-
-
-/***************************************************/
-
-
-.movie-container{
-	background-size: cover;
-	background-position: center center;
-	position: relative;
-}
-
-.movie-content{
-	z-index: 1;
-	position: relative;
-	padding: 30px 60px;
-	color: #fff;
-}
-
-.movie-title{
-    font-weight: bold;
-    font-size: 26px;
-    margin-bottom: 18px;
-}
-
-
-.movie-main-container{
-	display: flex;
-}
-
-
-.movie-poster{
-	max-height: 250px;
-	box-shadow: #0000008a 0px 3px 17px 4px;
-}
-
-
-.movie-main-content {
-    display: flex;
-}
-
-.col {
-    padding: 0 30px;
-}
-
-
-.blur{
-	background: rgba(0, 0, 0, 0.5);;
-	width: 100%;
-	height: 100%;
-	position: absolute;
-	z-index: 0;
-}
-
-td.rate-website {
-    padding-right: 30px;
-}
-
-td.rate-website a{
-	color: inherit;
-}
-
-.global-score {
-    font-size: 30px;
-    line-height: 50px;
-}
-
-table.movies-rates {
-    line-height: 25px;
-}
-
-
-p.overview {
+.movie-rank-page .movie-container {
+  background-size: cover;
+  background-position: center center;
+  position: relative; }
+  .movie-rank-page .movie-content {
+    z-index: 1;
+    position: relative;
+    padding: 30px 60px;
+    color: #fff; }
+    .movie-rank-page h4 {
+      margin-top: 0; }
+      .movie-rank-page .movie-main-container {
+        display: flex; }
+        .movie-rank-page .movie-poster {
+          max-height: 250px;
+          box-shadow: rgba(0, 0, 0, 0.54) 0px 3px 17px 4px; }
+          .movie-rank-page .movie-main-content {
+            display: flex; }
+            .movie-rank-page .col {
+              padding: 0 30px; }
+              .movie-rank-page .blur {
+                background: rgba(0, 0, 0, 0.5);
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                z-index: 0; }
+                .movie-rank-page table.movies-rates {
+                  line-height: 25px; }
+                  .movie-rank-page table.movies-rates tr.movie-rate {
+                    border-bottom: none; }
+                    .movie-rank-page table.movies-rates tr.movie-rate td {
+                      padding: 0; }
+                      .movie-rank-page table.movies-rates tr.movie-rate td.rate-website,
+                      .movie-rank-page table.movies-rates tr.movie-rate td.rate-rate {
+                        padding-right: 30px; }
+                        .movie-rank-page table.movies-rates tr.movie-rate td.rate-website a {
+                          color: inherit; }
+                          .movie-rank-page table.movies-rates tr.movie-rate td.rate-count {
+                            font-size: 10px;
+                            font-style: italic;
+                            white-space: nowrap; }
+.movie-rank-page .global-score {
+  font-size: 30px;
+  line-height: 50px; }
+  .movie-rank-page p.overview {
     font-weight: 300;
-    line-height: 1.5;
-    margin-bottom: 20px;
-}
+    line-height: 1.5; }
 
-td.rate-rate {
-    padding-right: 30px;
-}
-
-.rate-count {
-    font-size: 10px;
-    font-style: italic;
-    white-space: nowrap;
-}
-
-
-
-
-
-
+.home {
+  text-align: center; }
