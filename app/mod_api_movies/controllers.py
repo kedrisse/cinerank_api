@@ -29,7 +29,7 @@ def choose_cinema():
 # Set the route and accepted methods
 @mod_api_movies.route('/movies/<int:cinema_id>/', methods=['GET'])
 def get_movies(cinema_id):
-    return render_template('movies/index.html', movies=Movie.get_today_movies_order_by_score(cinema_id))
+    return render_template('movies/index.html', cinema=Cinema.get_cinema(cinema_id), movies=Movie.get_today_movies_order_by_score(cinema_id))
     # return jsonify(Movie.get_today_movies_order_by_score(cinema_id, format='api_json'))
 
 

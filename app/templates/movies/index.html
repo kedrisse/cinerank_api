@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Films à l'affiche au {{ cinema.name }} de {{ cinema.ville }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -15,8 +15,8 @@
             <div class="movie-main-container">
                 <img src="{{ movie.tmdb_movie.get_poster_path() }}" class="movie-poster">
 
-                <div class="movie-main-content">
-                    <div class="col">
+                <div class="row movie-main-content">
+                    <div class="col s3">
                         <div class="global-score">{{ movie.score() }}</div>
                         <table class="movies-rates">
                             {% for site in movie.get_rates() %}
@@ -31,16 +31,23 @@
                             {% endfor %}
                         </table>
                     </div>
-                    <div class="col">
+                    <div class="col s9">
                         <p class="overview">{{ movie.tmdb_movie.overview }}</p>
 
-                        <div class="prochaine_seance">
-                            Prochaine séance : {{ movie.upcoming_seances[0].local_timezone().strftime('%H:%M') }}
-                            <span class="prochaine_seance_specs">{{ ', '.join(movie.upcoming_seances[0].get_specificites()) }}</span>
+
+                        <div class="next_seances">
+                            <h5>Prochaines séances :</h5>
+                            <span> | </span>
+                            {% for seance in movie.upcoming_seances %}
+                                <span>{{ seance.local_timezone().strftime('%H:%M') }}</span>
+                                <span class="seance_specificite">{{ seance.get_version() }} {{ ', '.join(seance.get_specificites()) }}</span>
+                                <span> | </span>
+                            {% endfor %}
                         </div>
                     </div>
-
                 </div>
+
+
             </div>
         </div>
     </div>

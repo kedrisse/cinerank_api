@@ -80,13 +80,7 @@ table {
     box-shadow: rgba(0, 0, 0, 0.54) 0px 3px 17px 4px;
   }
 
-  .movie-main-content {
-    display: flex;
-  }
 
-  .col {
-    padding: 0 30px;
-  }
 
   .blur {
     background: rgba(0, 0, 0, 0.5);;
@@ -94,6 +88,12 @@ table {
     height: 100%;
     position: absolute;
     z-index: 0;
+  }
+
+
+  .movie-main-content{
+    margin-left: 20px;
+    width: 100%;
   }
 
   table.movies-rates {
@@ -120,6 +120,12 @@ table {
         }
       }
 
+    }
+  }
+
+  .next_seances{
+    .seance_specificite{
+      font-size: .8rem;
     }
   }
 

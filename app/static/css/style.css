@@ -14,31 +14,32 @@
         .movie-rank-page .movie-poster {
           max-height: 250px;
           box-shadow: rgba(0, 0, 0, 0.54) 0px 3px 17px 4px; }
-          .movie-rank-page .movie-main-content {
-            display: flex; }
-            .movie-rank-page .col {
-              padding: 0 30px; }
-              .movie-rank-page .blur {
-                background: rgba(0, 0, 0, 0.5);
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                z-index: 0; }
-                .movie-rank-page table.movies-rates {
-                  line-height: 25px; }
-                  .movie-rank-page table.movies-rates tr.movie-rate {
-                    border-bottom: none; }
-                    .movie-rank-page table.movies-rates tr.movie-rate td {
-                      padding: 0; }
-                      .movie-rank-page table.movies-rates tr.movie-rate td.rate-website,
-                      .movie-rank-page table.movies-rates tr.movie-rate td.rate-rate {
-                        padding-right: 30px; }
-                        .movie-rank-page table.movies-rates tr.movie-rate td.rate-website a {
-                          color: inherit; }
-                          .movie-rank-page table.movies-rates tr.movie-rate td.rate-count {
-                            font-size: 10px;
-                            font-style: italic;
-                            white-space: nowrap; }
+          .movie-rank-page .blur {
+            background: rgba(0, 0, 0, 0.5);
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: 0; }
+            .movie-rank-page .movie-main-content {
+              margin-left: 20px;
+              width: 100%; }
+              .movie-rank-page table.movies-rates {
+                line-height: 25px; }
+                .movie-rank-page table.movies-rates tr.movie-rate {
+                  border-bottom: none; }
+                  .movie-rank-page table.movies-rates tr.movie-rate td {
+                    padding: 0; }
+                    .movie-rank-page table.movies-rates tr.movie-rate td.rate-website,
+                    .movie-rank-page table.movies-rates tr.movie-rate td.rate-rate {
+                      padding-right: 30px; }
+                      .movie-rank-page table.movies-rates tr.movie-rate td.rate-website a {
+                        color: inherit; }
+                        .movie-rank-page table.movies-rates tr.movie-rate td.rate-count {
+                          font-size: 10px;
+                          font-style: italic;
+                          white-space: nowrap; }
+.movie-rank-page .next_seances .seance_specificite {
+  font-size: 0.8rem; }
 .movie-rank-page .global-score {
   font-size: 30px;
   line-height: 50px; }

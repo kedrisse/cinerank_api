@@ -38,7 +38,7 @@ class Cinema:
             if f['c'] == self.id:
                 for s in f['hor']:
                     if 'd' in s:
-                        seance = Seance(s['id'], parse(s['d']), f['f'], s['sp'])
+                        seance = Seance(s['id'], parse(s['d']), f['f'], s['sp'], f['v'])
                         self.seances.append(seance)
 
         if film_id is not None:
