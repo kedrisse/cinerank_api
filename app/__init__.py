@@ -2,6 +2,7 @@
 from flask import Flask, render_template
 from flask_cors import CORS
 from flask_scss import Scss
+import locale
 
 # Import SQLAlchemy
 from flask_sqlalchemy import SQLAlchemy
@@ -13,6 +14,8 @@ Scss(app)
 
 # Configurations
 app.config.from_object('config')
+
+locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
 
 # Define the database object which is imported
 # by modules and controllers
