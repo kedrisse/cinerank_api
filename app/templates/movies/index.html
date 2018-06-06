@@ -37,23 +37,31 @@
 
                         <div class="next_seances">
                             <h5>Prochaines séances :</h5>
-                            <div>
+                            <div class="z-depth-1">
                                 <ul class="tabs">
-                                    {% for day in movie.get_upcoming_seances_by_day() %}
+                                    {% for day in movie.get_upcoming_seances_by_day_by_version() %}
                                         <li class="tab col">
                                             <a href="#{{ movie.id }}_{{ day.timetuple().tm_yday }}">{{ day.strftime('%A %d %b') }}</a>
                                         </li>
                                     {% endfor %}
                                 </ul>
                                 <div class="tab-content-container">
-                                    {% for day in movie.get_upcoming_seances_by_day() %}
+                                    {% for day in movie.get_upcoming_seances_by_day_by_version() %}
                                         <div id="{{ movie.id }}_{{ day.timetuple().tm_yday }}">
-                                            <span> | </span>
-                                            {% for seance in movie.get_upcoming_seances_by_day()[day] %}
-                                                <span>{{ seance.local_timezone().strftime('%H:%M') }}</span>
-                                                <span class="seance_specificite">{{ seance.get_version() }} {{ ', '.join(seance.get_specificites()) }}</span>
-                                                <span> | </span>
+                                            {% for version in movie.get_upcoming_seances_by_day_by_version()[day] %}
+                                                <div>
+                                                    <h6>{{ version }}</h6>
+                                                    <div>
+                                                        <span> | </span>
+                                                        {% for seance in movie.get_upcoming_seances_by_day_by_version()[day][version] %}
+                                                            <span>{{ seance.local_timezone().strftime('%H:%M') }}</span>
+                                                            <span class="seance_specificite">{{ ', '.join(seance.get_specificites()) }}</span>
+                                                            <span> | </span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
                                             {% endfor %}
+
                                         </div>
                                     {% endfor %}
                                 </div>

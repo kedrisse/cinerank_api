@@ -88,6 +88,24 @@ class Movie(Base):
 
         return days
 
+    def get_upcoming_seances_by_day_by_version(self):
+        days = {}
+
+        for seance in self.upcoming_seances:
+            if seance.timestamp.date() not in days:
+                days[seance.timestamp.date()] = {}
+                if seance.get_version() not in days[seance.timestamp.date()]:
+                    days[seance.timestamp.date()][seance.get_version()] = [seance]
+                else:
+                    days[seance.timestamp.date()][seance.get_version()].append(seance)
+            else:
+                if seance.get_version() not in days[seance.timestamp.date()]:
+                    days[seance.timestamp.date()][seance.get_version()] = [seance]
+                else:
+                    days[seance.timestamp.date()][seance.get_version()].append(seance)
+
+        return days
+
     def get_upcoming_seances_json(self):
         upcoming_seances = []
 
