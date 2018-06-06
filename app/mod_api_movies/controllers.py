@@ -22,7 +22,7 @@ def choose_cinema():
     if cinema_id is not None:
         return redirect(url_for('movies.get_movies', cinema_id=cinema_id))
 
-    return render_template('movies/choose_cine.html', cinemas=Cinema.get_cinemas())
+    return render_template('movies/choose_cine.html', cinemas=sorted(Cinema.get_cinemas(), key=lambda x: x.ville))
     # return jsonify(Movie.get_today_movies_order_by_score(cinema_id, format='api_json'))
 
 

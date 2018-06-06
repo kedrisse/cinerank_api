@@ -127,6 +127,22 @@ table {
     .seance_specificite{
       font-size: .8rem;
     }
+
+    .tab-content-container{
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.40);
+    }
+
+    .tabs{
+      background-color: rgba(0, 0, 0, 0.40);
+      border-bottom: 1px solid rgba(132, 132, 132, 0.28);
+
+      .tab{
+        a{
+          color: #fff;
+        }
+      }
+    }
   }
 
   .global-score {

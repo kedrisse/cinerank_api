@@ -77,6 +77,17 @@ class Movie(Base):
     def set_upcoming_seances(self, upcoming_seances):
         self.upcoming_seances = upcoming_seances
 
+    def get_upcoming_seances_by_day(self):
+        days = {}
+
+        for seance in self.upcoming_seances:
+            if seance.timestamp.date() not in days:
+                days[seance.timestamp.date()] = [seance]
+            else:
+                days[seance.timestamp.date()].append(seance)
+
+        return days
+
     def get_upcoming_seances_json(self):
         upcoming_seances = []
 
@@ -138,7 +149,8 @@ class Movie(Base):
 
         for f in cine.get_films():
 
-            upcoming_seances = f.get_today_upcoming_seances(cine_id)
+            #upcoming_seances = f.get_today_upcoming_seances(cine_id)
+            upcoming_seances = f.get_upcoming_seances_of_the_week(cine_id)
             if len(upcoming_seances) > 0:
 
                 # si on a déjà l'id tmdb dans la DB

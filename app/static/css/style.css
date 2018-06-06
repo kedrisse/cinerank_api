@@ -40,6 +40,14 @@
                           white-space: nowrap; }
 .movie-rank-page .next_seances .seance_specificite {
   font-size: 0.8rem; }
+  .movie-rank-page .next_seances .tab-content-container {
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.4); }
+    .movie-rank-page .next_seances .tabs {
+      background-color: rgba(0, 0, 0, 0.4);
+      border-bottom: 1px solid rgba(132, 132, 132, 0.28); }
+      .movie-rank-page .next_seances .tabs .tab a {
+        color: #fff; }
 .movie-rank-page .global-score {
   font-size: 30px;
   line-height: 50px; }

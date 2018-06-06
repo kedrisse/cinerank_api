@@ -64,3 +64,10 @@ class FilmGaumont:
         present_local = datetime.now(get_localzone())
         today_upcoming_seances = [s for s in seances if s.timestamp > present and s.timestamp.date() == present_local.date()]
         return sorted(today_upcoming_seances, key=lambda seance: seance.timestamp)  # sort by timestamp
+
+    def get_upcoming_seances_of_the_week(self, cine_id):
+        seances = self.get_seances(cine_id)
+        present = datetime.now(timezone('UTC'))
+        present_local = datetime.now(get_localzone())
+        upcoming_seances = [s for s in seances if s.timestamp > present and s.timestamp.date().timetuple().tm_yday < ((present_local.date().timetuple().tm_yday + 7)%365)]
+        return sorted(upcoming_seances, key=lambda seance: seance.timestamp)  # sort by timestamp

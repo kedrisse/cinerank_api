@@ -37,13 +37,29 @@
 
                         <div class="next_seances">
                             <h5>Prochaines séances :</h5>
-                            <span> | </span>
-                            {% for seance in movie.upcoming_seances %}
-                                <span>{{ seance.local_timezone().strftime('%H:%M') }}</span>
-                                <span class="seance_specificite">{{ seance.get_version() }} {{ ', '.join(seance.get_specificites()) }}</span>
-                                <span> | </span>
-                            {% endfor %}
+                            <div>
+                                <ul class="tabs">
+                                    {% for day in movie.get_upcoming_seances_by_day() %}
+                                        <li class="tab col">
+                                            <a href="#{{ movie.id }}_{{ day.timetuple().tm_yday }}">{{ day.strftime('%A %d %b') }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                                <div class="tab-content-container">
+                                    {% for day in movie.get_upcoming_seances_by_day() %}
+                                        <div id="{{ movie.id }}_{{ day.timetuple().tm_yday }}">
+                                            <span> | </span>
+                                            {% for seance in movie.get_upcoming_seances_by_day()[day] %}
+                                                <span>{{ seance.local_timezone().strftime('%H:%M') }}</span>
+                                                <span class="seance_specificite">{{ seance.get_version() }} {{ ', '.join(seance.get_specificites()) }}</span>
+                                                <span> | </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
 
