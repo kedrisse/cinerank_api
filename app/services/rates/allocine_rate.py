@@ -17,30 +17,39 @@ class AllocineRate:
 
     @staticmethod
     def call(original_name, local_name):
-        allocine_query = original_name
-        search_link = 'http://www.allocine.fr/recherche/?q=' + urllib.parse.quote_plus(allocine_query)
-
-        content = open_link(search_link)
-        page = BeautifulSoup(content, "html.parser")
+        trouve = False
+        j = 0
         movie_link = None
 
-        table = page.select('table.totalwidth.noborder.purehtml')
-        if len(table) == 0:
-            return None, None, None
-        table = table[0]
-        links = table.select('tr td.totalwidth a')
+        names = [original_name, local_name]
 
-        trouve = False
-        i = 0
+        while (not trouve) and j < len(names):
+            allocine_query = names[j]
+            search_link = 'http://www.allocine.fr/recherche/?q=' + urllib.parse.quote_plus(allocine_query)
 
-        if len(links) == 0:
-            return None, None, None
+            content = open_link(search_link)
+            page = BeautifulSoup(content, "html.parser")
 
-        while (not trouve) and i < len(links):
-            movie_name = links[i].text
-            movie_link = links[i]['href']
-            trouve = similar(movie_name, original_name) or similar(movie_name, local_name)
-            i += 1
+            table = page.select('table.totalwidth.noborder.purehtml')
+            if len(table) == 0:
+                j+=1
+                continue
+            table = table[0]
+            links = table.select('tr td.totalwidth a')
+
+            i = 0
+
+            if len(links) == 0:
+                j += 1
+                continue
+
+            while (not trouve) and i < len(links):
+                movie_name = links[i].text
+                movie_link = links[i]['href']
+                trouve = (similar(movie_name, original_name) or similar(movie_name, local_name))
+                i += 1
+
+            j += 1
 
         if movie_link is None:
             return None, None, None
