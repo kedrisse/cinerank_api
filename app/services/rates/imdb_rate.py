@@ -25,7 +25,7 @@ class ImdbRate:
             return None, None, None
 
         try:
-            imdb_link = "https://www.imdb.com/title/tt" + str(imdb_id)
+            imdb_link = "https://www.imdb.com/title/tt" + str(imdb_id).zfill(7)
             imdb_page = BeautifulSoup(open_link(imdb_link), "html.parser")
 
             aggregate_rating = imdb_page.select('div[itemprop="aggregateRating"]')

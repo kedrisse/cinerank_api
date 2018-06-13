@@ -128,7 +128,7 @@ class Movie(Base):
 
     def get_external_ids(self):
         return {
-                'imdb': ("https://www.imdb.com/title/tt" + str(self.imdb_id)) if self.imdb_id is not None else None,
+                'imdb': ("https://www.imdb.com/title/tt" + str(self.imdb_id).zfill(7)) if self.imdb_id is not None else None,
                 'allocine': ('http://www.allocine.fr/film/fichefilm_gen_cfilm=' + str(self.allocine_id) + '.html') if self.allocine_id is not None else None
             }
 
