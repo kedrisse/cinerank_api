@@ -68,8 +68,24 @@ class Movie(Base):
 
     tmdb_movie = None
     upcoming_seances = None
+
     allocine_rate_count_avg = None
     imdb_rate_count_avg = None
+
+    @staticmethod
+    def get_rate_count_svg_tab():
+        if Movie.allocine_rate_count_avg is None:
+            Movie.allocine_rate_count_avg = \
+                Movie.query.with_entities(func.avg(Movie.allocine_number_rate).label('average'))[0][0]
+
+        if Movie.imdb_rate_count_avg is None:
+            Movie.imdb_rate_count_avg = Movie.query.with_entities(func.avg(Movie.imdb_number_rate).label('average'))[0][
+                0]
+
+        return {
+            'allocine': Movie.allocine_rate_count_avg,
+            'imdb': Movie.imdb_rate_count_avg,
+        }
 
     def set_tmdb_movie(self, tmdb_movie):
         self.tmdb_movie = tmdb_movie
@@ -118,13 +134,33 @@ class Movie(Base):
         return {
             'imdb': {
                 'rate': self.imdb_rate,
-                'rates_count': self.imdb_number_rate
+                'rates_count': self.imdb_number_rate,
+                'max_rate': 10
             },
             'allocine': {
                 'rate': self.allocine_rate,
-                'rates_count': self.allocine_number_rate
+                'rates_count': self.allocine_number_rate,
+                'max_rate': 5
             },
         }
+
+    def get_not_none_rates(self):
+        rates = self.get_rates()
+        res = {}
+
+        for site in rates:
+            if rates[site]['rate'] is not None:
+                res[site] = rates[site]
+
+        return res
+
+    def all_rates_are_none(self):
+        rates = self.get_rates()
+        for site in rates:
+            if rates[site]['rate'] is not None:
+                return False
+
+        return True
 
     def get_external_ids(self):
         return {
@@ -134,32 +170,29 @@ class Movie(Base):
                 self.allocine_id) + '.html') if self.allocine_id is not None else None
         }
 
+    def get_avg_number_rates(self):
+        res = 0
+        rates = self.get_not_none_rates()
+        rates_avg = Movie.get_rate_count_svg_tab()
+
+        for site in rates:
+            res += (rates[site]['rates_count'] + rates_avg[site] / 100)
+
+        return res
+
     def score(self):
-        if Movie.allocine_rate_count_avg is None:
-            Movie.allocine_rate_count_avg = \
-                Movie.query.with_entities(func.avg(Movie.allocine_number_rate).label('average'))[0][0]
+        rates = self.get_not_none_rates()
 
-        if Movie.imdb_rate_count_avg is None:
-            Movie.imdb_rate_count_avg = Movie.query.with_entities(func.avg(Movie.imdb_number_rate).label('average'))[0][
-                0]
-
-        if self.imdb_rate is None and self.allocine_rate is None:
+        if len(rates.keys()) == 0:
             return 0.
-        elif self.allocine_rate is None:
-            score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, Movie.imdb_rate_count_avg / 100) / (
-                    self.imdb_number_rate + Movie.imdb_rate_count_avg / 100)
-        elif self.imdb_rate is None:
-            score = self.local_score(self.allocine_rate, 5, self.allocine_number_rate,
-                                     Movie.allocine_rate_count_avg / 100) / (
-                            self.allocine_number_rate +
-                            Movie.allocine_rate_count_avg / 100)
-        else:
-            score = (self.local_score(self.imdb_rate, 10, self.imdb_number_rate,
-                                      Movie.imdb_rate_count_avg / 100) + self.local_score(self.allocine_rate, 5,
-                                                                                          self.allocine_number_rate,
-                                                                                          Movie.allocine_rate_count_avg / 100)) / (
-                            self.imdb_number_rate + Movie.imdb_rate_count_avg / 100 + self.allocine_number_rate +
-                            Movie.allocine_rate_count_avg / 100)
+
+        rates_count_avg = Movie.get_rate_count_svg_tab()
+        score = 0
+
+        for site in rates:
+            score += self.local_score(rates[site]['rate'], rates[site]['max_rate'], rates[site]['rates_count'],
+                                      rates_count_avg[site] / 100)
+        score /= self.get_avg_number_rates()
 
         return round(score, 1)
 
