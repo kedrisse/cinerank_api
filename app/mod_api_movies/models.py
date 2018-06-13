@@ -31,7 +31,8 @@ def build_api_index_response(movies):
             },
             'external_ids': {
                 'imdb': ("https://www.imdb.com/title/tt" + str(movie.imdb_id)) if movie.imdb_id is not None else None,
-                'allocine': ('http://www.allocine.fr/film/fichefilm_gen_cfilm=' + str(movie.allocine_id) + '.html') if movie.allocine_id is not None else None
+                'allocine': ('http://www.allocine.fr/film/fichefilm_gen_cfilm=' + str(
+                    movie.allocine_id) + '.html') if movie.allocine_id is not None else None
             },
             'upcoming_seances': movie.get_upcoming_seances_json()
         }
@@ -67,9 +68,8 @@ class Movie(Base):
 
     tmdb_movie = None
     upcoming_seances = None
-    allocine_rate_count_svg = None
-    imdb_rate_count_svg = None
-
+    allocine_rate_count_avg = None
+    imdb_rate_count_avg = None
 
     def set_tmdb_movie(self, tmdb_movie):
         self.tmdb_movie = tmdb_movie
@@ -128,32 +128,38 @@ class Movie(Base):
 
     def get_external_ids(self):
         return {
-                'imdb': ("https://www.imdb.com/title/tt" + str(self.imdb_id).zfill(7)) if self.imdb_id is not None else None,
-                'allocine': ('http://www.allocine.fr/film/fichefilm_gen_cfilm=' + str(self.allocine_id) + '.html') if self.allocine_id is not None else None
-            }
+            'imdb': ("https://www.imdb.com/title/tt" + str(self.imdb_id).zfill(
+                7)) if self.imdb_id is not None else None,
+            'allocine': ('http://www.allocine.fr/film/fichefilm_gen_cfilm=' + str(
+                self.allocine_id) + '.html') if self.allocine_id is not None else None
+        }
 
     def score(self):
-        if Movie.allocine_rate_count_svg is None:
-            Movie.allocine_rate_count_svg = \
+        if Movie.allocine_rate_count_avg is None:
+            Movie.allocine_rate_count_avg = \
                 Movie.query.with_entities(func.avg(Movie.allocine_number_rate).label('average'))[0][0]
 
-        if Movie.imdb_rate_count_svg is None:
-            Movie.imdb_rate_count_svg = Movie.query.with_entities(func.avg(Movie.imdb_number_rate).label('average'))[0][
+        if Movie.imdb_rate_count_avg is None:
+            Movie.imdb_rate_count_avg = Movie.query.with_entities(func.avg(Movie.imdb_number_rate).label('average'))[0][
                 0]
 
         if self.imdb_rate is None and self.allocine_rate is None:
             return 0.
         elif self.allocine_rate is None:
-            score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, Movie.imdb_rate_count_svg / 100)
+            score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, Movie.imdb_rate_count_avg / 100) / (
+                    self.imdb_number_rate + Movie.imdb_rate_count_avg / 100)
         elif self.imdb_rate is None:
             score = self.local_score(self.allocine_rate, 5, self.allocine_number_rate,
-                                     Movie.allocine_rate_count_svg / 100) * 2
+                                     Movie.allocine_rate_count_avg / 100) / (
+                            self.allocine_number_rate +
+                            Movie.allocine_rate_count_avg / 100)
         else:
-            score = (self.local_score(self.imdb_rate, 10, self.imdb_number_rate, Movie.imdb_rate_count_svg / 100) + \
-                         self.local_score(self.allocine_rate, 5, self.allocine_number_rate,
-                                          Movie.allocine_rate_count_svg / 100)) / (
-                                self.imdb_number_rate + Movie.imdb_rate_count_svg / 100 + self.allocine_number_rate +
-                                Movie.allocine_rate_count_svg / 100)
+            score = (self.local_score(self.imdb_rate, 10, self.imdb_number_rate,
+                                      Movie.imdb_rate_count_avg / 100) + self.local_score(self.allocine_rate, 5,
+                                                                                          self.allocine_number_rate,
+                                                                                          Movie.allocine_rate_count_avg / 100)) / (
+                            self.imdb_number_rate + Movie.imdb_rate_count_avg / 100 + self.allocine_number_rate +
+                            Movie.allocine_rate_count_avg / 100)
 
         return round(score, 1)
 
@@ -168,7 +174,7 @@ class Movie(Base):
 
         for f in cine.get_films():
 
-            #upcoming_seances = f.get_today_upcoming_seances(cine_id)
+            # upcoming_seances = f.get_today_upcoming_seances(cine_id)
             upcoming_seances = f.get_upcoming_seances_of_the_week(cine_id)
             if len(upcoming_seances) > 0:
 
@@ -250,13 +256,16 @@ class Movie(Base):
                 allocine = {}
                 imdb = {}
 
-                allocine['id'], allocine['rate'], allocine['count'] = AllocineRate.call(tmdb_movie.original_title, tmdb_movie.title)
+                allocine['id'], allocine['rate'], allocine['count'] = AllocineRate.call(tmdb_movie.original_title,
+                                                                                        tmdb_movie.title)
 
                 imdb_id = tmdb_movie.get_external_ids()['imdb_id'][2:]
                 imdb['id'], imdb['rate'], imdb['count'] = ImdbRate.call(imdb_id)
 
-                movie = Movie(gaumont_id=tmdb_movie.id, tmdb_id=tmdb_movie.id, imdb_id=imdb['id'], imdb_rate=imdb['rate'], imdb_number_rate=imdb['count'],
-                              allocine_id=allocine['id'], allocine_rate=allocine['rate'], allocine_number_rate=allocine['count'])
+                movie = Movie(gaumont_id=tmdb_movie.id, tmdb_id=tmdb_movie.id, imdb_id=imdb['id'],
+                              imdb_rate=imdb['rate'], imdb_number_rate=imdb['count'],
+                              allocine_id=allocine['id'], allocine_rate=allocine['rate'],
+                              allocine_number_rate=allocine['count'])
                 movie.set_tmdb_movie(tmdb_movie)
 
                 db.session.add(movie)
@@ -271,7 +280,6 @@ class Movie(Base):
             return build_api_index_response(now_playing_movies)
 
         return now_playing_movies
-
 
     @staticmethod
     def update_rates():
