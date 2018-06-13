@@ -149,15 +149,16 @@ class Movie(Base):
             score = self.local_score(self.allocine_rate, 5, self.allocine_number_rate,
                                      Movie.allocine_rate_count_svg / 100) * 2
         else:
-            score = self.local_score(self.imdb_rate, 10, self.imdb_number_rate, Movie.imdb_rate_count_svg / 100) + \
-                    self.local_score(self.allocine_rate, 5, self.allocine_number_rate,
-                                     Movie.allocine_rate_count_svg / 100)
-            score = score * 2 / 3
+            score = (self.local_score(self.imdb_rate, 10, self.imdb_number_rate, Movie.imdb_rate_count_svg / 100) + \
+                         self.local_score(self.allocine_rate, 5, self.allocine_number_rate,
+                                          Movie.allocine_rate_count_svg / 100)) / (
+                                self.imdb_number_rate + Movie.imdb_rate_count_svg / 100 + self.allocine_number_rate +
+                                Movie.allocine_rate_count_svg / 100)
 
         return round(score, 1)
 
     def local_score(self, rate, max_rate, number_rate, constante=0.5):
-        return (((number_rate * rate / max_rate) + (0.5 * constante)) / (number_rate + constante)) * max_rate
+        return ((number_rate * rate / max_rate) + (0.5 * constante)) * 10
 
     @staticmethod
     def get_gaumont_movies(cine_id):
