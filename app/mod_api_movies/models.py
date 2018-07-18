@@ -72,22 +72,24 @@ class Movie(Base):
     tmdb_movie = None
     upcoming_seances = None
 
-    allocine_rate_count_avg = None
-    imdb_rate_count_avg = None
+    allocine_rate_count_avg = {}
+    imdb_rate_count_avg = {}
 
-    @staticmethod
-    def get_rate_count_svg_tab():
-        if Movie.allocine_rate_count_avg is None:
-            Movie.allocine_rate_count_avg = \
-                Movie.query.with_entities(func.avg(Movie.allocine_number_rate).label('average'))[0][0]
+    def get_rate_count_svg_tab(self):
 
-        if Movie.imdb_rate_count_avg is None:
-            Movie.imdb_rate_count_avg = Movie.query.with_entities(func.avg(Movie.imdb_number_rate).label('average'))[0][
-                0]
+        if self.release_date not in Movie.allocine_rate_count_avg:
+            Movie.allocine_rate_count_avg[self.release_date] = \
+            Movie.query.filter_by(release_date=self.release_date).with_entities(
+                func.avg(Movie.allocine_number_rate).label('average'))[0][0]
+
+        if self.release_date not in Movie.imdb_rate_count_avg:
+            Movie.imdb_rate_count_avg[self.release_date] = \
+                Movie.query.filter_by(release_date=self.release_date).with_entities(
+                    func.avg(Movie.imdb_number_rate).label('average'))[0][0]
 
         return {
-            'allocine': Movie.allocine_rate_count_avg,
-            'imdb': Movie.imdb_rate_count_avg,
+            'allocine': Movie.allocine_rate_count_avg[self.release_date],
+            'imdb': Movie.imdb_rate_count_avg[self.release_date],
         }
 
     def set_tmdb_movie(self, tmdb_movie):
@@ -152,8 +154,10 @@ class Movie(Base):
         res = {}
 
         for site in rates:
-            if rates[site]['rate'] is not None:
-                res[site] = rates[site]
+            res[site] = rates[site]
+            if rates[site]['rate'] is None:
+                res[site]['rate'] = 0
+                res[site]['rates_count'] = 0
 
         return res
 
@@ -173,29 +177,30 @@ class Movie(Base):
                 self.allocine_id) + '.html') if self.allocine_id is not None else None
         }
 
-    def get_avg_number_rates(self):
+    def get_avg_number_rates(self, avg_significance):
         res = 0
         rates = self.get_not_none_rates()
-        rates_avg = Movie.get_rate_count_svg_tab()
+        rates_avg = self.get_rate_count_svg_tab()
 
         for site in rates:
-            res += (rates[site]['rates_count'] + rates_avg[site] / 100)
+            res += (rates[site]['rates_count'] + rates_avg[site] * avg_significance)
 
         return res
 
     def score(self):
         rates = self.get_not_none_rates()
+        avg_significance = 1/50
 
         if len(rates.keys()) == 0:
             return 0.
 
-        rates_count_avg = Movie.get_rate_count_svg_tab()
+        rates_count_avg = self.get_rate_count_svg_tab()
         score = 0
 
         for site in rates:
             score += self.local_score(rates[site]['rate'], rates[site]['max_rate'], rates[site]['rates_count'],
-                                      rates_count_avg[site] / 100)
-        score /= self.get_avg_number_rates()
+                                      rates_count_avg[site] * avg_significance)
+        score /= self.get_avg_number_rates(avg_significance)
 
         return round(score, 1)
 
@@ -319,7 +324,9 @@ class Movie(Base):
 
     @staticmethod
     def update_rates():
-        for movie in Movie.query.filter(Movie.release_date >= (datetime.date.today() - datetime.timedelta(2*365/12))).order_by(Movie.release_date.desc(), Movie.date_created.desc()):
+        for movie in Movie.query.filter(
+                Movie.release_date >= (datetime.date.today() - datetime.timedelta(2 * 365 / 12))).order_by(
+                Movie.release_date.desc(), Movie.date_created.desc()):
             allocine = {}
             imdb = {}
 
