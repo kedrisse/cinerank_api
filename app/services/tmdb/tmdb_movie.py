@@ -3,6 +3,7 @@ import urllib.request
 import urllib.parse
 import ssl
 from difflib import SequenceMatcher
+from dateutil.parser import parse
 
 from app.services.tmdb import api_key, language
 
@@ -28,6 +29,7 @@ class TmdbMovie:
         self.poster_path = poster_path
         self.title = title
         self.external_ids = None
+        self.release_dates = None
         self.imdb_id = imdb_id
         self.backdrop_path = backdrop_path
         self.overview = overview
@@ -51,6 +53,22 @@ class TmdbMovie:
         with urllib.request.urlopen(content_url) as url:
             self.external_ids = json.loads(url.read().decode())
             return self.external_ids
+
+    def get_release_dates(self):
+        if self.release_dates is not None:
+            return self.release_dates
+
+        api_request_log('get_release_dates')
+        content_url = "https://api.themoviedb.org/3/movie/" + str(self.id) + "/release_dates?api_key=" + api_key
+        with urllib.request.urlopen(content_url) as url:
+            self.release_dates = json.loads(url.read().decode())
+            return self.release_dates
+
+    def french_release_date(self):
+        for date in self.get_release_dates()['results']:
+            if date['iso_3166_1'] == 'FR':
+                return parse(date['release_dates'][0]['release_date'])
+        return None
 
     @staticmethod
     def search_film(movie_name):

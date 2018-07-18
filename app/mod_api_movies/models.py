@@ -66,6 +66,8 @@ class Movie(Base):
     imdb_number_rate = db.Column(db.Integer, nullable=True)
     allocine_number_rate = db.Column(db.Integer, nullable=True)
 
+    release_date = db.Column(db.Date, nullable=True)
+
     tmdb_movie = None
     upcoming_seances = None
 
@@ -211,7 +213,7 @@ class Movie(Base):
             upcoming_seances = f.get_upcoming_seances_of_the_week(cine_id)
             if len(upcoming_seances) > 0:
 
-                # si on a déjà l'id tmdb dans la DB
+                # si on a déjà l'id dans la DB
                 if Movie.query.filter_by(gaumont_id=f.id).count() > 0:
                     movie = Movie.query.filter_by(gaumont_id=f.id).first()
                     tmdb_movie = TmdbMovie.search_in_now_playing(movie.tmdb_id, nb_pages=5)
@@ -237,7 +239,7 @@ class Movie(Base):
                     movie = Movie(gaumont_id=f.id, tmdb_id=tmdb_movie.id, imdb_id=imdb['id'],
                                   imdb_rate=imdb['rate'], imdb_number_rate=imdb['count'],
                                   allocine_id=allocine['id'], allocine_rate=allocine['rate'],
-                                  allocine_number_rate=allocine['count'])
+                                  allocine_number_rate=allocine['count'], release_date=tmdb_movie.french_release_date())
 
                     db.session.add(movie)
                     db.session.commit()
@@ -316,9 +318,13 @@ class Movie(Base):
 
     @staticmethod
     def update_rates():
-        for movie in Movie.query.order_by(Movie.date_created.desc()).limit(20):
+        for movie in Movie.query.order_by(Movie.release_date.desc(), Movie.date_created.desc()).limit(20):
             allocine = {}
             imdb = {}
+
+            if movie.release_date is None and movie.tmdb_id is not None:
+                tmdb = TmdbMovie.get_film(movie.tmdb_id)
+                movie.release_date = tmdb.french_release_date()
 
             allocine['id'], movie.allocine_rate, movie.allocine_number_rate = AllocineRate.get_rate(movie.allocine_id)
             imdb['id'], movie.imdb_rate, movie.imdb_number_rate = ImdbRate.get_rate(movie.imdb_id)
