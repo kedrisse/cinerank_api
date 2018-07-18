@@ -318,7 +318,7 @@ class Movie(Base):
 
     @staticmethod
     def update_rates():
-        for movie in Movie.query.order_by(Movie.release_date.desc(), Movie.date_created.desc()).limit(20):
+        for movie in Movie.query.order_by(Movie.release_date.desc(), Movie.date_created.desc()):
             allocine = {}
             imdb = {}
 
