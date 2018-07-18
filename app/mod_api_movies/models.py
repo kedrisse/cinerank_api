@@ -6,6 +6,7 @@ from app.services.rates.allocine_rate import AllocineRate
 from app.services.rates.imdb_rate import ImdbRate
 from app.services.tmdb.tmdb_movie import TmdbMovie
 from sqlalchemy.sql import func
+import datetime
 
 
 def build_api_index_response(movies):
@@ -318,7 +319,7 @@ class Movie(Base):
 
     @staticmethod
     def update_rates():
-        for movie in Movie.query.order_by(Movie.release_date.desc(), Movie.date_created.desc()):
+        for movie in Movie.query.filter(Movie.release_date >= (datetime.date.today() - datetime.timedelta(2*365/12))).order_by(Movie.release_date.desc(), Movie.date_created.desc()):
             allocine = {}
             imdb = {}
 
