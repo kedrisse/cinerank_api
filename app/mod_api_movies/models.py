@@ -226,7 +226,7 @@ class Movie(Base):
                     if tmdb_movie is None:
                         tmdb_movie = TmdbMovie.get_film(movie.tmdb_id)
                 else:
-                    tmdb_movie = TmdbMovie.search_film(f.name)
+                    tmdb_movie = TmdbMovie.search_film(f.name, f.sortie.year)
                     if tmdb_movie is None:
                         continue
 

@@ -71,18 +71,20 @@ class TmdbMovie:
         return None
 
     @staticmethod
-    def search_film(movie_name):
+    def search_film(movie_name, year):
         api_request_log('search_film ' + movie_name)
 
         content_url = 'https://api.themoviedb.org/3/search/multi?query=' + urllib.parse.quote_plus(movie_name) + \
-                      '&api_key=' + api_key + '&include_adult=false&language=' + language
+                      '&api_key=' + api_key + '&include_adult=false&language=' + language + '&year='+str(year)
+
+        print(content_url)
 
         ssl._create_default_https_context = ssl._create_unverified_context
         with urllib.request.urlopen(content_url) as url:
             results = json.loads(url.read().decode())['results']
 
             for res in results:
-                if res['media_type'] == 'movie':
+                if res['media_type'] == 'movie' and parse(res['release_date']).year == year:
                     return TmdbMovie(id=res['id'],
                                      original_title=res['original_title'],
                                      poster_path=res['poster_path'],
