@@ -81,11 +81,15 @@ class Movie(Base):
             Movie.allocine_rate_count_avg[self.release_date] = \
             Movie.query.filter_by(release_date=self.release_date).with_entities(
                 func.avg(Movie.allocine_number_rate).label('average'))[0][0]
+            if Movie.allocine_rate_count_avg[self.release_date] is None:
+                Movie.allocine_rate_count_avg[self.release_date] = 0.0
 
         if self.release_date not in Movie.imdb_rate_count_avg:
             Movie.imdb_rate_count_avg[self.release_date] = \
                 Movie.query.filter_by(release_date=self.release_date).with_entities(
                     func.avg(Movie.imdb_number_rate).label('average'))[0][0]
+            if Movie.imdb_rate_count_avg[self.release_date] is None:
+                Movie.imdb_rate_count_avg[self.release_date] = 0.0
 
         return {
             'allocine': Movie.allocine_rate_count_avg[self.release_date],
