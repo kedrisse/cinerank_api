@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import urllib.request
 import ssl
+import json
 
 
 def open_link(link):
@@ -28,24 +29,11 @@ class ImdbRate:
             imdb_link = "https://www.imdb.com/title/tt" + str(imdb_id).zfill(7)
             imdb_page = BeautifulSoup(open_link(imdb_link), "html.parser")
 
-            aggregate_rating = imdb_page.select('div[itemprop="aggregateRating"]')
-            if len(aggregate_rating) == 0:
-                return imdb_id, None, None
+            json_data = json.loads(imdb_page.find('script', type='application/ld+json').text)
 
-            rating_value = aggregate_rating[0].select('span[itemprop="ratingValue"]')
-            if len(rating_value) == 0:
-                return imdb_id, None, None
-
-            imbd_rate = rating_value[0].text
-            imbd_rate = float(imbd_rate.replace(',', '.'))
-
-            rating_count = aggregate_rating[0].select('span[itemprop="ratingCount"]')
-            if len(rating_count) == 0:
-                return imdb_id, imbd_rate, None
-
-            imbd_rates_count = rating_count[0].text
-            imbd_rates_count = imbd_rates_count.replace(' ', '')
-            imbd_rates_count = int(imbd_rates_count.replace(',', ''))
+            aggregate_rating = json_data['aggregateRating']
+            imbd_rate = float(aggregate_rating['ratingValue'])
+            imbd_rates_count = int(aggregate_rating['ratingCount'])
 
             return imdb_id, imbd_rate, imbd_rates_count
 
