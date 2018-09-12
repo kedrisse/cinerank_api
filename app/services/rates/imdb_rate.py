@@ -31,6 +31,9 @@ class ImdbRate:
 
             json_data = json.loads(imdb_page.find('script', type='application/ld+json').text)
 
+            if 'aggregateRating' not in json_data:
+                return imdb_id, None, None
+
             aggregate_rating = json_data['aggregateRating']
             imbd_rate = float(aggregate_rating['ratingValue'])
             imbd_rates_count = int(aggregate_rating['ratingCount'])
