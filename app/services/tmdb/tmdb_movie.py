@@ -1,5 +1,6 @@
 import json
 import urllib.request
+import urllib.error
 import urllib.parse
 import ssl
 from difflib import SequenceMatcher
@@ -84,7 +85,7 @@ class TmdbMovie:
             results = json.loads(url.read().decode())['results']
 
             for res in results:
-                if res['media_type'] == 'movie' and parse(res['release_date']).year == year:
+                if res['media_type'] == 'movie':
                     return TmdbMovie(id=res['id'],
                                      original_title=res['original_title'],
                                      poster_path=res['poster_path'],
@@ -102,16 +103,19 @@ class TmdbMovie:
                       '?api_key=' + api_key + '&language=' + language
 
         ssl._create_default_https_context = ssl._create_unverified_context
-        with urllib.request.urlopen(content_url) as url:
-            res = json.loads(url.read().decode())
-            TmdbMovie.loaded_movies[movie_id] = TmdbMovie(id=res['id'],
-                                                          original_title=res['original_title'],
-                                                          poster_path=res['poster_path'],
-                                                          backdrop_path=res['backdrop_path'],
-                                                          title=res['title'],
-                                                          overview=res['overview'])
+        try:
+            with urllib.request.urlopen(content_url) as url:
+                res = json.loads(url.read().decode())
+                TmdbMovie.loaded_movies[movie_id] = TmdbMovie(id=res['id'],
+                                                              original_title=res['original_title'],
+                                                              poster_path=res['poster_path'],
+                                                              backdrop_path=res['backdrop_path'],
+                                                              title=res['title'],
+                                                              overview=res['overview'])
 
-            return TmdbMovie.loaded_movies[movie_id]
+                return TmdbMovie.loaded_movies[movie_id]
+        except urllib.error.HTTPError as e:
+            return None
 
     @staticmethod
     def get_now_playing(page=1):

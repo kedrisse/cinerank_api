@@ -229,6 +229,8 @@ class Movie(Base):
                     tmdb_movie = TmdbMovie.search_in_now_playing(movie.tmdb_id, nb_pages=5)
                     if tmdb_movie is None:
                         tmdb_movie = TmdbMovie.get_film(movie.tmdb_id)
+                    if tmdb_movie is None:
+                        continue
                 else:
                     tmdb_movie = TmdbMovie.search_film(f.name, f.sortie.year)
                     if tmdb_movie is None:
