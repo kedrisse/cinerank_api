@@ -187,7 +187,7 @@ class Movie(Base):
         rates_avg = self.get_rate_count_svg_tab()
 
         for site in rates:
-            if site == 'allocine' && self.country == 'France':
+            if site == 'allocine' and self.country == 'France':
                 res += (rates[site]['rates_count'] * 2 + rates_avg[site] * avg_significance)
             else:
                 res += (rates[site]['rates_count'] + rates_avg[site] * avg_significance)
@@ -206,7 +206,7 @@ class Movie(Base):
 
         for site in rates:
             #démerde toi pour ajouter self.country. bisous <3
-            if site == 'allocine' && self.country == 'France':
+            if site == 'allocine' and self.country == 'France':
                 score += self.local_score(rates[site]['rate'], rates[site]['max_rate'], rates[site]['rates_count'] * 2,
                                       rates_count_avg[site] * avg_significance)
             else:
